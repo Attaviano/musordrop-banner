@@ -9,7 +9,7 @@
 ![Platform](https://img.shields.io/badge/Windows%20%7C%20macOS%20%7C%20Linux-8b5cf6?style=flat-square)
 ![ffmpeg](https://img.shields.io/badge/ffmpeg-%D0%B2%D1%81%D1%82%D1%80%D0%BE%D0%B5%D0%BD-007808?style=flat-square&logo=ffmpeg&logoColor=white)
 [![License](https://img.shields.io/badge/license-MIT-f3c75b?style=flat-square)](LICENSE)
-[![Release](https://img.shields.io/github/v/release/Attaviano/musordrop-banner?style=flat-square&color=8b5cf6&label=%D0%B2%D0%B5%D1%80%D1%81%D0%B8%D1%8F)](https://github.com/Attaviano/musordrop-banner/releases/latest)
+[![Release](https://img.shields.io/github/v/release/Attaviano/musordrop-banner?style=flat-square&color=8b5cf6&label=%D0%B2%D0%B5%D1%80%D1%81%D0%B8%D1%8F&cacheSeconds=3600)](https://github.com/Attaviano/musordrop-banner/releases/latest)
 
 [![Telegram](https://img.shields.io/badge/Telegram-@attavian0-26A5E4?style=for-the-badge&logo=telegram&logoColor=white)](https://t.me/attavian0)
 
