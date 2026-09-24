@@ -1,0 +1,12 @@
+__pycache__/
+*.pyc
+.venv/
+
+work/
+output/
+
+*.mp4
+*.mov
+*.webm
+*.mkv
+*.gif

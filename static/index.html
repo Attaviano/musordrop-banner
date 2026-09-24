@@ -1,0 +1,553 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Musor Drop Banner</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Unbounded:wght@600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0b0a10;
+    --surface: #14121c;
+    --surface-2: #1b1826;
+    --surface-3: #242033;
+    --border: #2a2639;
+    --border-strong: #3a3450;
+    --text: #efecf7;
+    --muted: #938ca8;
+    --faint: #5f5873;
+    --accent: #8b5cf6;
+    --accent-2: #b98bff;
+    --accent-glow: rgba(139, 92, 246, .35);
+    --gold: #f3c75b;
+    --ok: #34d399;
+    --danger: #f87171;
+    --radius: 16px;
+    --radius-sm: 10px;
+    --display: "Unbounded", "Manrope", system-ui, sans-serif;
+    --body: "Manrope", system-ui, -apple-system, "Segoe UI", sans-serif;
+  }
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  html, body { margin: 0; }
+  body {
+    background:
+      radial-gradient(1200px 600px at 85% -10%, rgba(139, 92, 246, .16), transparent 60%),
+      radial-gradient(900px 500px at -10% 110%, rgba(243, 199, 91, .06), transparent 60%),
+      var(--bg);
+    color: var(--text);
+    font: 500 15px/1.5 var(--body);
+    min-height: 100vh;
+  }
+  button, input { font: inherit; color: inherit; }
+  button { cursor: pointer; }
+
+  .app { max-width: 1240px; margin: 0 auto; padding: 28px 24px 60px; }
+
+  header { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 28px; }
+  .brand { display: flex; align-items: center; gap: 14px; }
+  .logo {
+    width: 44px; height: 44px; border-radius: 12px; display: grid; place-items: center;
+    background: linear-gradient(145deg, #2a1f47, #120f1c); border: 1px solid var(--border-strong);
+    box-shadow: 0 0 24px var(--accent-glow);
+  }
+  .brand h1 { font: 700 20px/1.1 var(--display); margin: 0; letter-spacing: .01em; }
+  .brand p { margin: 3px 0 0; color: var(--muted); font-size: 13px; }
+
+  .btn {
+    display: inline-flex; align-items: center; gap: 8px; border-radius: 12px; border: 1px solid var(--border-strong);
+    background: var(--surface-2); padding: 10px 16px; font-weight: 600; font-size: 14px;
+    transition: background .15s, border-color .15s, transform .1s, box-shadow .15s;
+  }
+  .btn:hover { background: var(--surface-3); border-color: #4a4266; }
+  .btn:active { transform: translateY(1px); }
+  .btn:disabled { opacity: .45; cursor: not-allowed; }
+  .btn-primary {
+    background: linear-gradient(135deg, #9b6bff, #7c3aed); border-color: transparent; color: #fff;
+    box-shadow: 0 8px 28px -8px var(--accent-glow), inset 0 1px 0 rgba(255,255,255,.18);
+  }
+  .btn-primary:hover { background: linear-gradient(135deg, #a77cff, #8647f5); }
+  .btn-ghost { background: transparent; border-color: transparent; color: var(--muted); padding: 8px 10px; }
+  .btn-ghost:hover { background: var(--surface-2); color: var(--text); border-color: var(--border); }
+  .icon-btn {
+    width: 34px; height: 34px; border-radius: 10px; display: grid; place-items: center; border: 1px solid transparent;
+    background: transparent; color: var(--muted); transition: all .15s;
+  }
+  .icon-btn:hover { background: var(--surface-3); color: var(--text); border-color: var(--border); }
+  .icon-btn.danger:hover { color: var(--danger); }
+
+  .layout { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 24px; align-items: start; }
+  @media (max-width: 960px) { .layout { grid-template-columns: 1fr; } .side { position: static !important; } }
+
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); }
+
+  .drop {
+    display: block; position: relative; border: 1.5px dashed var(--border-strong); border-radius: var(--radius);
+    background: linear-gradient(180deg, rgba(139,92,246,.05), transparent 70%), var(--surface);
+    padding: 34px 24px; text-align: center; cursor: pointer; transition: all .2s;
+  }
+  .drop:hover, .drop.over { border-color: var(--accent); background: linear-gradient(180deg, rgba(139,92,246,.14), rgba(139,92,246,.03)), var(--surface); }
+  .drop.over { box-shadow: 0 0 0 4px rgba(139,92,246,.15); }
+  .drop-icon {
+    width: 56px; height: 56px; margin: 0 auto 14px; border-radius: 16px; display: grid; place-items: center;
+    background: rgba(139,92,246,.14); color: var(--accent-2);
+  }
+  .drop h2 { font: 600 17px/1.3 var(--display); margin: 0 0 6px; }
+  .drop p { margin: 0; color: var(--muted); font-size: 14px; }
+  .drop p b { color: var(--accent-2); font-weight: 600; }
+
+  .list-head { display: flex; align-items: center; justify-content: space-between; margin: 26px 2px 12px; }
+  .list-head h3 { margin: 0; font: 600 14px/1 var(--display); letter-spacing: .02em; color: var(--muted); text-transform: uppercase; }
+  .list-head .count { color: var(--faint); font-weight: 600; margin-left: 6px; }
+
+  .jobs { display: flex; flex-direction: column; gap: 12px; }
+  .empty { color: var(--faint); text-align: center; padding: 30px 0 10px; font-size: 14px; }
+
+  .job {
+    display: grid; grid-template-columns: 56px minmax(0, 1fr) auto; gap: 16px; align-items: center;
+    padding: 14px 14px 14px 14px; transition: border-color .2s;
+  }
+  .job.processing { border-color: rgba(139,92,246,.55); box-shadow: 0 0 0 1px rgba(139,92,246,.15), 0 10px 40px -20px var(--accent-glow); }
+  .job.done { border-color: rgba(52,211,153,.35); }
+  .job.error { border-color: rgba(248,113,113,.4); }
+  .thumb {
+    width: 56px; height: 100px; border-radius: 10px; overflow: hidden; background: var(--surface-3);
+    position: relative; flex: none;
+  }
+  .thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .thumb .play {
+    position: absolute; inset: 0; display: grid; place-items: center; background: rgba(10,8,16,.45);
+    opacity: 0; transition: opacity .15s; border: 0; color: #fff; width: 100%;
+  }
+  .thumb:hover .play { opacity: 1; }
+  .job-main { min-width: 0; }
+  .job-title { display: flex; align-items: center; gap: 10px; min-width: 0; }
+  .job-name { font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .meta { color: var(--muted); font-size: 13px; margin: 2px 0 12px; display: flex; flex-wrap: wrap; gap: 4px 14px; }
+  .meta b { color: var(--text); font-weight: 600; }
+  .meta .arrow { color: var(--faint); }
+
+  .chip {
+    flex: none; font-size: 12px; font-weight: 700; padding: 3px 9px; border-radius: 999px;
+    background: var(--surface-3); color: var(--muted); border: 1px solid var(--border);
+  }
+  .chip.queued { color: var(--gold); border-color: rgba(243,199,91,.3); background: rgba(243,199,91,.08); }
+  .chip.processing { color: var(--accent-2); border-color: rgba(139,92,246,.4); background: rgba(139,92,246,.12); }
+  .chip.done { color: var(--ok); border-color: rgba(52,211,153,.3); background: rgba(52,211,153,.08); }
+  .chip.error { color: var(--danger); border-color: rgba(248,113,113,.35); background: rgba(248,113,113,.08); }
+
+  .timeline { position: relative; height: 34px; }
+  .track {
+    position: absolute; left: 0; right: 0; top: 4px; height: 10px; border-radius: 6px;
+    background: repeating-linear-gradient(90deg, #2c273c 0 2px, #25213299 2px 10px); overflow: hidden;
+  }
+  .fill { position: absolute; left: 0; top: 0; bottom: 0; background: rgba(185,139,255,.28); transition: width .4s; }
+  .seg {
+    position: absolute; top: 0; height: 18px; border-radius: 5px;
+    background: linear-gradient(180deg, var(--accent-2), var(--accent));
+    box-shadow: 0 0 12px var(--accent-glow); border: 1px solid rgba(255,255,255,.25);
+  }
+  .tick { position: absolute; top: 20px; font-size: 11px; font-weight: 700; color: var(--accent-2); transform: translateX(-2px); white-space: nowrap; }
+  .tick.end { right: 0; color: var(--faint); transform: none; }
+
+  .progress-row { display: flex; align-items: center; gap: 10px; margin-top: 8px; }
+  .bar { flex: 1; height: 6px; border-radius: 4px; background: var(--surface-3); overflow: hidden; }
+  .bar i {
+    display: block; height: 100%; border-radius: 4px; background: linear-gradient(90deg, var(--accent), var(--accent-2));
+    transition: width .5s ease; position: relative; overflow: hidden;
+  }
+  .bar i::after {
+    content: ""; position: absolute; inset: 0;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,.35), transparent);
+    animation: shine 1.2s linear infinite;
+  }
+  @keyframes shine { from { transform: translateX(-100%); } to { transform: translateX(100%); } }
+  .pct { font-size: 12px; font-weight: 700; color: var(--accent-2); min-width: 38px; text-align: right; }
+  .err { color: var(--danger); font-size: 13px; margin-top: 6px; white-space: pre-wrap; max-height: 80px; overflow: auto; }
+  .actions { display: flex; gap: 4px; align-self: center; }
+
+  .side { position: sticky; top: 20px; display: flex; flex-direction: column; gap: 16px; }
+  .panel { padding: 18px; }
+  .panel h4 { margin: 0 0 14px; font: 600 13px/1 var(--display); letter-spacing: .03em; text-transform: uppercase; color: var(--muted); }
+  .banner-prev {
+    border-radius: 12px; overflow: hidden; border: 1px solid var(--border); aspect-ratio: 1902 / 1000;
+    background:
+      conic-gradient(#1d1a28 25%, #171421 0 50%, #1d1a28 0 75%, #171421 0) 0 0 / 16px 16px;
+    display: grid; place-items: center;
+  }
+  .banner-prev img { width: 100%; height: 100%; object-fit: contain; display: block; }
+  .banner-info { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-top: 12px; }
+  .banner-info .name { font-weight: 700; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .banner-info .sub { color: var(--muted); font-size: 12px; }
+  .swatch { display: inline-block; width: 10px; height: 10px; border-radius: 3px; vertical-align: -1px; margin-right: 4px; border: 1px solid rgba(255,255,255,.2); }
+
+  .field { margin-bottom: 18px; }
+  .field:last-child { margin-bottom: 0; }
+  .label { display: flex; justify-content: space-between; font-size: 13px; font-weight: 600; margin-bottom: 8px; }
+  .label .val { color: var(--accent-2); }
+  .hint { color: var(--faint); font-size: 12px; margin-top: 6px; }
+
+  .seg-ctl { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; background: var(--surface-2); border: 1px solid var(--border); border-radius: 11px; padding: 3px; gap: 3px; }
+  .seg-ctl button { border: 0; background: transparent; border-radius: 8px; padding: 7px 6px; font-size: 13px; font-weight: 600; color: var(--muted); transition: all .15s; }
+  .seg-ctl button:hover { color: var(--text); }
+  .seg-ctl button.on { background: var(--surface-3); color: var(--text); box-shadow: 0 1px 0 rgba(255,255,255,.06) inset, 0 2px 8px rgba(0,0,0,.3); }
+
+  input[type=range] { -webkit-appearance: none; appearance: none; width: 100%; height: 6px; border-radius: 4px; background: var(--surface-3); outline: none; }
+  input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 18px; height: 18px; border-radius: 50%; background: #fff; border: 4px solid var(--accent); box-shadow: 0 0 10px var(--accent-glow); cursor: pointer; }
+  input[type=range]::-moz-range-thumb { width: 12px; height: 12px; border-radius: 50%; background: #fff; border: 4px solid var(--accent); cursor: pointer; }
+
+  .switch { display: flex; align-items: center; justify-content: space-between; font-size: 13px; font-weight: 600; cursor: pointer; }
+  .switch input { display: none; }
+  .switch .knob { width: 40px; height: 22px; border-radius: 999px; background: var(--surface-3); border: 1px solid var(--border-strong); position: relative; transition: background .2s; }
+  .switch .knob::after { content: ""; position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; border-radius: 50%; background: #cfc8e6; transition: transform .2s, background .2s; }
+  .switch input:checked + .knob { background: var(--accent); border-color: transparent; }
+  .switch input:checked + .knob::after { transform: translateX(18px); background: #fff; }
+
+  .rules { font-size: 13px; color: var(--muted); }
+  .rules ul { margin: 0; padding-left: 18px; }
+  .rules li { margin-bottom: 6px; }
+  .rules b { color: var(--text); }
+
+  .go { width: 100%; justify-content: center; padding: 14px 16px; font-size: 15px; }
+
+  .modal { position: fixed; inset: 0; background: rgba(5,4,10,.75); backdrop-filter: blur(6px); display: none; place-items: center; z-index: 50; padding: 20px; }
+  .modal.open { display: grid; }
+  .modal-box { position: relative; max-height: 92vh; }
+  .modal video { max-height: 88vh; max-width: min(92vw, 520px); border-radius: 14px; display: block; background: #000; box-shadow: 0 30px 80px rgba(0,0,0,.6); }
+  .modal .close { position: absolute; top: -14px; right: -14px; background: var(--surface-3); border: 1px solid var(--border-strong); color: var(--text); }
+
+  .toasts { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); display: flex; flex-direction: column; gap: 8px; z-index: 60; }
+  .toast { background: var(--surface-3); border: 1px solid var(--border-strong); padding: 10px 16px; border-radius: 12px; font-size: 14px; box-shadow: 0 10px 30px rgba(0,0,0,.4); animation: pop .2s ease; }
+  .toast.bad { border-color: rgba(248,113,113,.5); }
+  @keyframes pop { from { transform: translateY(8px); opacity: 0; } }
+
+  @media (max-width: 560px) {
+    .app { padding: 18px 16px 40px; }
+    header { flex-wrap: wrap; }
+    .job { grid-template-columns: 48px minmax(0, 1fr); }
+    .thumb { width: 48px; height: 86px; }
+    .actions { grid-column: 1 / -1; justify-content: flex-end; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <div class="brand">
+      <div class="logo" aria-hidden="true">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M5 4h14a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1Z" stroke="#b98bff" stroke-width="1.6"/><path d="M4 9h16M8 4v5M16 4v5" stroke="#b98bff" stroke-width="1.6"/><path d="M10 12.5v4.5l4-2.25-4-2.25Z" fill="#f3c75b"/></svg>
+      </div>
+      <div>
+        <h1>Musor Drop Banner</h1>
+        <p>Баннер Musor Drop в ролики по правилам партнёрки</p>
+      </div>
+    </div>
+    <button class="btn" id="openFolder" title="Открыть папку с готовыми видео">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7Z" stroke="currentColor" stroke-width="1.8"/></svg>
+      Готовые видео
+    </button>
+  </header>
+
+  <div class="layout">
+    <main>
+      <label class="drop" id="drop">
+        <input type="file" id="fileInput" accept="video/*" multiple hidden>
+        <div class="drop-icon">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none"><path d="M12 16V4m0 0-4.5 4.5M12 4l4.5 4.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 15v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        </div>
+        <h2>Перетащи видео сюда</h2>
+        <p>или <b>выбери файлы</b> - можно сразу несколько</p>
+      </label>
+
+      <div class="list-head">
+        <h3>Очередь<span class="count" id="count"></span></h3>
+        <button class="btn btn-ghost" id="clearDone" hidden>Убрать готовые</button>
+      </div>
+      <div class="jobs" id="jobs"></div>
+    </main>
+
+    <aside class="side">
+      <section class="card panel">
+        <h4>Баннер</h4>
+        <div class="banner-prev" id="bannerPrev"></div>
+        <div class="banner-info">
+          <div style="min-width:0">
+            <div class="name" id="bannerName"></div>
+            <div class="sub" id="bannerSub"></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="card panel">
+        <h4>Настройки</h4>
+        <div class="field">
+          <div class="label"><span>Размер баннера</span><span class="val" id="scaleVal"></span></div>
+          <input type="range" id="scale" min="30" max="100" step="5">
+        </div>
+        <div class="field">
+          <div class="label"><span>Вырезание зелёного</span><span class="val" id="simVal"></span></div>
+          <input type="range" id="similarity" min="0.05" max="0.6" step="0.01">
+          <div class="hint">Больше - если по краям осталась зелёная кайма</div>
+        </div>
+        <div class="field">
+          <label class="switch"><span>Звук баннера</span><input type="checkbox" id="audio"><span class="knob"></span></label>
+        </div>
+        <div class="field">
+          <div class="label"><span>Качество</span></div>
+          <div class="seg-ctl" data-setting="quality">
+            <button data-v="high">Высокое</button>
+            <button data-v="medium">Среднее</button>
+            <button data-v="light">Лёгкое</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="card panel rules">
+        <h4>Правила</h4>
+        <ul>
+          <li>До <b>1:59</b> - один баннер в середине готового ролика (12 с → с 0:09)</li>
+          <li>От <b>2:00</b> - по баннеру в каждой полной минуте: <b>0:30, 1:30, 2:30…</b></li>
+          <li>Длина считается с учётом баннеров - они удлиняют ролик</li>
+        </ul>
+      </section>
+
+      <button class="btn btn-primary go" id="go" disabled>Обработать</button>
+    </aside>
+  </div>
+</div>
+
+<div class="modal" id="modal">
+  <div class="modal-box">
+    <video id="player" controls playsinline></video>
+    <button class="icon-btn close" id="closeModal" aria-label="Закрыть">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6 6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+    </button>
+  </div>
+</div>
+<div class="toasts" id="toasts"></div>
+
+<script>
+const $ = (s) => document.querySelector(s);
+let S = null;
+const uploads = new Map();
+let pollTimer = null;
+let lastJobsHtml = "";
+let offline = false;
+
+const ICONS = {
+  play: '<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5.5v13l11-6.5-11-6.5Z"/></svg>',
+  folder: '<svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7Z" stroke="currentColor" stroke-width="1.8"/></svg>',
+  x: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6 6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>',
+  redo: '<svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M4 12a8 8 0 1 0 2.3-5.6M4 4v4h4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  run: '<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5.5v13l11-6.5-11-6.5Z"/></svg>',
+};
+
+function fmt(t) {
+  const m = Math.floor(t / 60), s = t - m * 60;
+  const whole = Math.abs(s - Math.round(s)) < 0.05;
+  const ss = whole ? String(Math.round(s)).padStart(2, "0") : s.toFixed(1).padStart(4, "0");
+  return `${m}:${ss}`;
+}
+function esc(s) { return String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c])); }
+function toast(msg, bad = false) {
+  const el = document.createElement("div");
+  el.className = "toast" + (bad ? " bad" : "");
+  el.textContent = msg;
+  $("#toasts").appendChild(el);
+  setTimeout(() => el.remove(), bad ? 6000 : 3000);
+}
+function plural(n, one, few, many) {
+  const m10 = n % 10, m100 = n % 100;
+  if (m10 === 1 && m100 !== 11) return one;
+  if (m10 >= 2 && m10 <= 4 && (m100 < 12 || m100 > 14)) return few;
+  return many;
+}
+
+async function api(path, opts = {}) {
+  const r = await fetch(path, opts);
+  const data = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(data.error || `Ошибка ${r.status}`);
+  return data;
+}
+async function post(path, body) {
+  return api(path, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body || {}) });
+}
+
+function setState(s) { S = s; render(); schedulePoll(); }
+
+function schedulePoll() {
+  clearTimeout(pollTimer);
+  const busy = S && S.jobs.some((j) => j.status === "queued" || j.status === "processing");
+  pollTimer = setTimeout(async () => {
+    try {
+      setState(await api("/api/state"));
+      offline = false;
+    } catch {
+      if (!offline) toast("Программа не отвечает. Если закрыл окно консоли, запусти start.bat", true);
+      offline = true;
+      schedulePoll();
+    }
+  }, busy ? 700 : 4000);
+}
+
+function timeline(j) {
+  const segs = j.starts.map((s) => {
+    const left = (s / j.total) * 100, w = Math.max((j.banner_len / j.total) * 100, 1.2);
+    return `<div class="seg" style="left:${left}%;width:${w}%"></div><span class="tick" style="left:${left}%">${fmt(s)}</span>`;
+  }).join("");
+  const fill = j.status === "processing" ? `<div class="fill" style="width:${j.progress * 100}%"></div>` : "";
+  return `<div class="timeline"><div class="track">${fill}</div>${segs}<span class="tick end">${fmt(j.total)}</span></div>`;
+}
+
+const STATUS = { ready: "Готов к обработке", queued: "В очереди", processing: "Обработка", done: "Готово", error: "Ошибка" };
+
+function jobCard(j) {
+  const n = j.starts.length;
+  const thumb = j.thumb ? `<img src="/thumbs/${encodeURIComponent(j.thumb)}" alt="">` : "";
+  const play = j.status === "done" ? `<button class="play" data-play="${esc(j.output)}" title="Посмотреть">${ICONS.play}</button>` : "";
+  let actions = "";
+  if (j.status === "done") {
+    actions += `<button class="icon-btn" data-reveal="${esc(j.output)}" title="Показать в папке">${ICONS.folder}</button>`;
+    actions += `<button class="icon-btn" data-redo="${j.id}" title="Сделать заново">${ICONS.redo}</button>`;
+  }
+  if (j.status === "ready" || j.status === "error") actions += `<button class="icon-btn" data-run="${j.id}" title="Обработать только это">${ICONS.run}</button>`;
+  if (j.status !== "processing") actions += `<button class="icon-btn danger" data-del="${j.id}" title="Убрать из очереди">${ICONS.x}</button>`;
+  const progress = j.status === "processing"
+    ? `<div class="progress-row"><div class="bar"><i style="width:${(j.progress * 100).toFixed(1)}%"></i></div><span class="pct">${Math.floor(j.progress * 100)}%</span></div>` : "";
+  const err = j.status === "error" && j.error ? `<div class="err">${esc(j.error)}</div>` : "";
+  return `<article class="card job ${j.status}">
+    <div class="thumb">${thumb}${play}</div>
+    <div class="job-main">
+      <div class="job-title"><span class="job-name" title="${esc(j.name)}">${esc(j.name)}</span><span class="chip ${j.status}">${STATUS[j.status]}</span></div>
+      <div class="meta"><span><b>${fmt(j.duration)}</b> <span class="arrow">→</span> <b>${fmt(j.total)}</b></span><span>${n} ${plural(n, "баннер", "баннера", "баннеров")}</span><span>${j.width}×${j.height} · ${Math.round(j.fps)} fps</span></div>
+      ${timeline(j)}${progress}${err}
+    </div>
+    <div class="actions">${actions}</div>
+  </article>`;
+}
+
+function uploadCard(u) {
+  return `<article class="card job"><div class="thumb"></div><div class="job-main">
+    <div class="job-title"><span class="job-name">${esc(u.name)}</span><span class="chip">Загрузка</span></div>
+    <div class="progress-row"><div class="bar"><i style="width:${u.pct}%"></i></div><span class="pct">${u.pct}%</span></div>
+  </div><div></div></article>`;
+}
+
+function render() {
+  if (!S) return;
+  const { settings: st, banner: b, jobs } = S;
+
+  $("#bannerPrev").innerHTML = b.thumb ? `<img src="/thumbs/${encodeURIComponent(b.thumb)}" alt="Баннер Musor Drop">` : `<span class="sub">Баннера нет</span>`;
+  $("#bannerName").textContent = b.name || "Баннер не найден";
+  if (b.name) {
+    $("#bannerSub").innerHTML = `${b.duration.toFixed(1)} с · ${b.width}×${b.height}`
+      + (b.chroma ? ` · <span class="swatch" style="background:#${b.chroma}"></span>фон вырезается` : "");
+  } else {
+    $("#bannerSub").textContent = b.error || "";
+  }
+
+  document.querySelectorAll(".seg-ctl").forEach((el) => {
+    const key = el.dataset.setting;
+    el.querySelectorAll("button").forEach((btn) => btn.classList.toggle("on", btn.dataset.v === st[key]));
+  });
+  if (document.activeElement !== $("#scale")) $("#scale").value = st.scale;
+  $("#scaleVal").textContent = st.scale >= 100 ? "Во всю ширину" : `${st.scale}%`;
+  if (document.activeElement !== $("#similarity")) $("#similarity").value = st.similarity;
+  $("#simVal").textContent = Number(st.similarity).toFixed(2);
+  $("#audio").checked = st.audio;
+
+  const cards = [...uploads.values()].map(uploadCard).concat(jobs.map(jobCard));
+  const html = cards.length ? cards.join("") : `<div class="empty">Пока пусто - добавь видео выше</div>`;
+  if (html !== lastJobsHtml) { $("#jobs").innerHTML = html; lastJobsHtml = html; }
+  $("#count").textContent = jobs.length ? `· ${jobs.length}` : "";
+  $("#clearDone").hidden = !jobs.some((j) => j.status === "done");
+
+  const ready = jobs.filter((j) => j.status === "ready" || j.status === "error").length;
+  const busy = jobs.filter((j) => j.status === "queued" || j.status === "processing").length;
+  const go = $("#go");
+  go.disabled = ready === 0;
+  go.textContent = busy && !ready ? `Обрабатываю… осталось ${busy}` : ready ? `Обработать ${ready} ${plural(ready, "видео", "видео", "видео")}` : "Обработать";
+}
+
+function uploadFile(file) {
+  return new Promise((resolve) => {
+    const id = Math.random().toString(36).slice(2);
+    uploads.set(id, { name: file.name, pct: 0 });
+    render();
+    const xhr = new XMLHttpRequest();
+    const fd = new FormData();
+    fd.append("file", file);
+    xhr.upload.onprogress = (e) => { if (e.lengthComputable) { uploads.get(id).pct = Math.round((e.loaded / e.total) * 100); render(); } };
+    xhr.onload = () => {
+      uploads.delete(id);
+      let data = {};
+      try { data = JSON.parse(xhr.responseText); } catch {}
+      if (xhr.status >= 400) toast(data.error || `Не удалось загрузить ${file.name}`, true);
+      else setState(data);
+      render();
+      resolve();
+    };
+    xhr.onerror = () => { uploads.delete(id); toast(`Не удалось загрузить ${file.name}`, true); render(); resolve(); };
+    xhr.open("POST", "/api/upload");
+    xhr.send(fd);
+  });
+}
+async function addFiles(files) {
+  const vids = [...files].filter((f) => f.type.startsWith("video/") || /\.(mp4|mov|mkv|webm|avi|m4v)$/i.test(f.name));
+  if (!vids.length) { toast("Это не видео", true); return; }
+  for (const f of vids) await uploadFile(f);
+}
+
+const drop = $("#drop");
+$("#fileInput").addEventListener("change", (e) => { addFiles(e.target.files); e.target.value = ""; });
+["dragenter", "dragover"].forEach((ev) => document.addEventListener(ev, (e) => { e.preventDefault(); drop.classList.add("over"); }));
+["dragleave", "drop"].forEach((ev) => document.addEventListener(ev, (e) => { e.preventDefault(); if (ev === "drop" || !e.relatedTarget) drop.classList.remove("over"); }));
+document.addEventListener("drop", (e) => { if (e.dataTransfer?.files?.length) addFiles(e.dataTransfer.files); });
+
+$("#jobs").addEventListener("click", async (e) => {
+  const t = e.target.closest("button");
+  if (!t) return;
+  try {
+    if (t.dataset.play) openPlayer(t.dataset.play);
+    else if (t.dataset.reveal) await post("/api/reveal", { output: t.dataset.reveal });
+    else if (t.dataset.redo) setState(await post(`/api/jobs/${t.dataset.redo}/redo`));
+    else if (t.dataset.run) setState(await post("/api/start", { ids: [t.dataset.run] }));
+    else if (t.dataset.del) setState(await api(`/api/jobs/${t.dataset.del}`, { method: "DELETE" }));
+  } catch (err) { toast(err.message, true); }
+});
+$("#go").addEventListener("click", async () => { try { setState(await post("/api/start")); } catch (err) { toast(err.message, true); } });
+$("#clearDone").addEventListener("click", async () => setState(await post("/api/clear-done")));
+$("#openFolder").addEventListener("click", () => post("/api/reveal"));
+
+let settingsTimer = null;
+function saveSettings(patch, delay = 0) {
+  Object.assign(S.settings, patch);
+  render();
+  clearTimeout(settingsTimer);
+  settingsTimer = setTimeout(async () => { try { setState(await post("/api/settings", patch)); } catch (err) { toast(err.message, true); } }, delay);
+}
+document.querySelectorAll(".seg-ctl").forEach((el) => el.addEventListener("click", (e) => {
+  const b = e.target.closest("button");
+  if (b) saveSettings({ [el.dataset.setting]: b.dataset.v });
+}));
+$("#scale").addEventListener("input", (e) => saveSettings({ scale: +e.target.value }, 250));
+$("#similarity").addEventListener("input", (e) => saveSettings({ similarity: +e.target.value }, 250));
+$("#audio").addEventListener("change", (e) => saveSettings({ audio: e.target.checked }));
+
+function openPlayer(name) {
+  const p = $("#player");
+  p.src = `/output/${encodeURIComponent(name)}`;
+  $("#modal").classList.add("open");
+  p.play().catch(() => {});
+}
+function closePlayer() { const p = $("#player"); p.pause(); p.removeAttribute("src"); p.load(); $("#modal").classList.remove("open"); }
+$("#closeModal").addEventListener("click", closePlayer);
+$("#modal").addEventListener("click", (e) => { if (e.target.id === "modal") closePlayer(); });
+document.addEventListener("keydown", (e) => { if (e.key === "Escape") closePlayer(); });
+
+api("/api/state").then(setState).catch(() => { offline = true; toast("Программа не отвечает. Запусти start.bat", true); schedulePoll(); });
+</script>
+</body>
+</html>
