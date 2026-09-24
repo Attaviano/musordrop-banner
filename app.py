@@ -289,7 +289,9 @@ def main():
     threading.Thread(target=worker, daemon=True).start()
     if "--no-browser" not in sys.argv:
         threading.Timer(1.0, lambda: webbrowser.open(url)).start()
-    print(f"Musor Drop Banner: {url}\nНе закрывай это окно, пока работаешь.")
+    print(f"Musor Drop Banner: {url}\n"
+          "Не закрывай это окно, пока работаешь.\n"
+          "Новости и обновления: https://t.me/attavian0")
     app.run(host=HOST, port=PORT, debug=False, threaded=True)
 
 

@@ -8,6 +8,8 @@
 ![Python](https://img.shields.io/badge/python-3.10+-3776AB?style=flat-square&logo=python&logoColor=white)
 ![Platform](https://img.shields.io/badge/Windows%20%7C%20macOS%20%7C%20Linux-8b5cf6?style=flat-square)
 ![ffmpeg](https://img.shields.io/badge/ffmpeg-%D0%B2%D1%81%D1%82%D1%80%D0%BE%D0%B5%D0%BD-007808?style=flat-square&logo=ffmpeg&logoColor=white)
+[![License](https://img.shields.io/badge/license-MIT-f3c75b?style=flat-square)](LICENSE)
+[![Release](https://img.shields.io/github/v/release/Attaviano/musordrop-banner?style=flat-square&color=8b5cf6&label=%D0%B2%D0%B5%D1%80%D1%81%D0%B8%D1%8F)](https://github.com/Attaviano/musordrop-banner/releases/latest)
 
 [![Telegram](https://img.shields.io/badge/Telegram-@attavian0-26A5E4?style=for-the-badge&logo=telegram&logoColor=white)](https://t.me/attavian0)
 
@@ -44,7 +46,7 @@
 ## Быстрый старт
 
 1. Поставь [Python 3.10 или новее](https://www.python.org/downloads/). При установке отметь **Add python.exe to PATH**.
-2. Скачай репозиторий: зелёная кнопка **Code** → **Download ZIP**, распакуй.
+2. Скачай [последнюю версию](https://github.com/Attaviano/musordrop-banner/releases/latest) (Source code zip) и распакуй.
 3. Скачай анимацию баннера в кабинете партнёрки Musor Drop и положи в папку с программой. В названии файла должно быть `green-screen` или `musordrop`, например `musordrop animation green-screen sound on.mp4`.
 4. Запусти **`start.bat`**. В первый раз он сам поставит зависимости, потом откроет программу в браузере.
 
@@ -113,5 +115,7 @@ python musordrop.py clip.mp4 --mute         # без звука баннера
 Сделано для партнёров Musor Drop. Новости и обновления в Telegram:
 
 [![Telegram](https://img.shields.io/badge/Telegram-@attavian0-26A5E4?style=for-the-badge&logo=telegram&logoColor=white)](https://t.me/attavian0)
+
+<sub>Лицензия MIT: пользуйся, меняй и делись, только сохрани файл LICENSE с указанием автора.</sub>
 
 </div>

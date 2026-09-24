@@ -235,7 +235,8 @@ def frame_png(path: Path, out: Path, t: float, width: int, chroma: str | None = 
 def main():
     sys.stdout.reconfigure(encoding="utf-8")
     sys.stderr.reconfigure(encoding="utf-8")
-    p = argparse.ArgumentParser(description="Вставляет баннер Musor Drop в видео по правилам партнёрки")
+    p = argparse.ArgumentParser(description="Вставляет баннер Musor Drop в видео по правилам партнёрки",
+                                epilog="Новости и обновления: https://t.me/attavian0")
     p.add_argument("videos", type=Path, nargs="+", help="одно или несколько видео")
     p.add_argument("-o", "--out", type=Path, help="куда сохранить, только для одного видео")
     p.add_argument("--scale", type=float, help="ширина баннера как доля ширины видео, например 0.8")
