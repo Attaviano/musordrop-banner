@@ -1,4 +1,5 @@
 import argparse
+import fnmatch
 import re
 import subprocess
 import sys
@@ -12,6 +13,17 @@ import imageio_ffmpeg
 FFMPEG = imageio_ffmpeg.get_ffmpeg_exe()
 HERE = Path(__file__).resolve().parent
 NO_WINDOW = getattr(subprocess, "CREATE_NO_WINDOW", 0)
+
+# partner banners: id -> (title, file patterns in the program folder)
+BANNERS = {
+    "musordrop": ("Musor Drop", ("*green-screen*.mp4", "*musor*drop*.mp4", "*musordrop*.mp4", "banner.mp4")),
+    "floatup": ("FloatUP", ("*float*up*.mov", "*float*up*.mp4", "*floatup*.mov", "*floatup*.mp4")),
+    "skinhouse": ("SkinHouse", ("*skin*house*.mp4", "*skin*house*.mov", "*skinhouse*.mp4", "*skinhouse*.mov")),
+}
+
+# minute rules: id -> (final length from which it applies, first banner second);
+# shorter videos get one banner in the middle
+MINUTE_RULES = {"floatup": (60, 20), "skinhouse": (90, 30)}
 
 
 class BannerError(Exception):
@@ -42,6 +54,11 @@ class Banner:
     path: Path
     media: Media
     chroma: str | None
+    kind: str = "musordrop"
+
+    @property
+    def title(self) -> str:
+        return BANNERS[self.kind][0]
 
 
 @dataclass
@@ -82,23 +99,24 @@ def detect_chroma(path: Path) -> str | None:
     if len(raw) < 3:
         return None
     r, g, b = raw[0], raw[1], raw[2]
-    if g > 180 and r < 90 and b < 90:
+    if g > 150 and g - max(r, b) > 90:
         return f"{r:02x}{g:02x}{b:02x}"
     return None
 
 
-def find_banner() -> Path | None:
-    for pattern in ("*green-screen*.mp4", "*musor*drop*.mp4", "*musordrop*.mp4", "banner.mp4"):
-        found = sorted(HERE.glob(pattern))
+def find_banner(kind: str = "musordrop") -> Path | None:
+    files = sorted(f for f in HERE.iterdir() if f.is_file())
+    for pattern in BANNERS[kind][1]:
+        found = [f for f in files if fnmatch.fnmatch(f.name.lower(), pattern)]
         if found:
             return found[0]
     return None
 
 
-def load_banner(path: Path | None = None) -> Banner:
-    path = path or find_banner()
+def load_banner(path: Path | None = None, kind: str = "musordrop") -> Banner:
+    path = path or find_banner(kind)
     if not path:
-        raise BannerError("Не найден баннер Musor Drop. Скачай его в кабинете партнёрки "
+        raise BannerError(f"Не найден баннер {BANNERS[kind][0]}. Скачай его в кабинете партнёрки "
                           "и положи в папку с программой.")
     try:
         media = probe(path)
@@ -106,24 +124,38 @@ def load_banner(path: Path | None = None) -> Banner:
         raise BannerError(f"{path.name}: {e}") from None
     if media.duration > 30:
         raise BannerError(f"{path.name}: баннер длиннее 30 секунд, это точно он?")
-    return Banner(path, media, detect_chroma(path))
+    return Banner(path, media, detect_chroma(path), kind)
 
 
 def banner_count(length: float) -> int:
     return 1 if length < 120 else int(length // 60)
 
 
-def plan(duration: float, banner_len: float):
+def minute_starts(duration: float, banner_len: float, first: float) -> list[float]:
+    # first, first + 1:00, first + 2:00... on the final timeline, while there is video left after the cut
+    starts, i = [], 0
+    while first + i * (60 - banner_len) < duration - 1:
+        starts.append(first + 60 * i)
+        i += 1
+    return starts
+
+
+def plan(duration: float, banner_len: float, kind: str = "musordrop"):
     """Returns (final length, banner starts in the output, cut points in the source)."""
-    # Count by the final length: every banner makes the video longer.
-    n = banner_count(duration)
-    for _ in range(50):
-        m = banner_count(duration + n * banner_len)
-        if m == n:
-            break
-        n = m
-    total = duration + n * banner_len
-    starts = [total / 2] if n == 1 else [30 + 60 * i for i in range(n)]
+    rule = MINUTE_RULES.get(kind)
+    if rule and duration + banner_len >= rule[0]:
+        starts = minute_starts(duration, banner_len, rule[1])
+        total = duration + len(starts) * banner_len
+    else:
+        # Count by the final length: every banner makes the video longer.
+        n = banner_count(duration)
+        for _ in range(50):
+            m = banner_count(duration + n * banner_len)
+            if m == n:
+                break
+            n = m
+        total = duration + n * banner_len
+        starts = [total / 2] if n == 1 else [30 + 60 * i for i in range(n)]
     cuts = [s - i * banner_len for i, s in enumerate(starts)]
     if cuts[0] <= 0 or cuts[-1] >= duration:
         raise BannerError("видео слишком короткое для баннера")
@@ -137,7 +169,7 @@ def fmt(t: float) -> str:
 def make_job(video: Path, banner: Banner) -> Job:
     v = probe(video)
     job = Job(video, v, banner)
-    job.total, job.starts, job.cuts = plan(v.duration, banner.media.duration)
+    job.total, job.starts, job.cuts = plan(v.duration, banner.media.duration, banner.kind)
     return job
 
 
@@ -235,10 +267,12 @@ def frame_png(path: Path, out: Path, t: float, width: int, chroma: str | None = 
 def main():
     sys.stdout.reconfigure(encoding="utf-8")
     sys.stderr.reconfigure(encoding="utf-8")
-    p = argparse.ArgumentParser(description="Вставляет баннер Musor Drop в видео по правилам партнёрки",
+    p = argparse.ArgumentParser(description="Вставляет баннер Musor Drop, FloatUP или SkinHouse в видео "
+                                            "по правилам партнёрки",
                                 epilog="Новости и обновления: https://t.me/attavian0")
     p.add_argument("videos", type=Path, nargs="+", help="одно или несколько видео")
     p.add_argument("-o", "--out", type=Path, help="куда сохранить, только для одного видео")
+    p.add_argument("--banner", choices=list(BANNERS), default="musordrop", help="какой баннер вставлять")
     p.add_argument("--scale", type=float, help="ширина баннера как доля ширины видео, например 0.8")
     p.add_argument("--similarity", type=float, default=0.25, help="сила вырезания зелёного фона, 0.01-1")
     p.add_argument("--mute", action="store_true", help="без звука баннера")
@@ -249,7 +283,7 @@ def main():
     if args.out and len(args.videos) > 1:
         sys.exit("-o работает только с одним видео")
     try:
-        banner = load_banner()
+        banner = load_banner(kind=args.banner)
     except BannerError as e:
         sys.exit(str(e))
 
@@ -265,7 +299,7 @@ def main():
                 print(f"  {fmt(s)} - {fmt(s + banner.media.duration)}")
             if args.dry_run:
                 continue
-            out = args.out or video.with_name(f"{video.stem}_musordrop.mp4")
+            out = args.out or video.with_name(f"{video.stem}_{banner.kind}.mp4")
             if out.resolve() == video.resolve():
                 raise BannerError("нельзя сохранять поверх исходника")
             render(job, out, opts)

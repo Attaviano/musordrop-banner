@@ -181,6 +181,7 @@
       conic-gradient(#1d1a28 25%, #171421 0 50%, #1d1a28 0 75%, #171421 0) 0 0 / 16px 16px;
     display: grid; place-items: center;
   }
+  .banner-pick { margin-bottom: 12px; }
   .banner-prev img { width: 100%; height: 100%; object-fit: contain; display: block; }
   .banner-info { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-top: 12px; }
   .banner-info .name { font-weight: 700; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -245,7 +246,7 @@
       </div>
       <div>
         <h1>Musor Drop Banner</h1>
-        <p>Баннер Musor Drop в ролики по правилам партнёрки</p>
+        <p>Баннеры Musor Drop, FloatUP и SkinHouse в ролики по правилам партнёрок</p>
       </div>
     </div>
     <div class="header-actions">
@@ -281,6 +282,11 @@
     <aside class="side">
       <section class="card panel">
         <h4>Баннер</h4>
+        <div class="seg-ctl banner-pick" data-setting="banner">
+          <button data-v="musordrop">Musor Drop</button>
+          <button data-v="floatup">FloatUP</button>
+          <button data-v="skinhouse">SkinHouse</button>
+        </div>
         <div class="banner-prev" id="bannerPrev"></div>
         <div class="banner-info">
           <div style="min-width:0">
@@ -316,11 +322,7 @@
 
       <section class="card panel rules">
         <h4>Правила</h4>
-        <ul>
-          <li>До <b>1:59</b> - один баннер в середине готового ролика (12 с → с 0:09)</li>
-          <li>От <b>2:00</b> - по баннеру в каждой полной минуте: <b>0:30, 1:30, 2:30…</b></li>
-          <li>Длина считается с учётом баннеров - они удлиняют ролик</li>
-        </ul>
+        <ul id="rules"></ul>
       </section>
 
       <button class="btn btn-primary go" id="go" disabled>Обработать</button>
@@ -431,7 +433,7 @@ function jobCard(j) {
     <div class="thumb">${thumb}${play}</div>
     <div class="job-main">
       <div class="job-title"><span class="job-name" title="${esc(j.name)}">${esc(j.name)}</span><span class="chip ${j.status}">${STATUS[j.status]}</span></div>
-      <div class="meta"><span><b>${fmt(j.duration)}</b> <span class="arrow">→</span> <b>${fmt(j.total)}</b></span><span>${n} ${plural(n, "баннер", "баннера", "баннеров")}</span><span>${j.width}×${j.height} · ${Math.round(j.fps)} fps</span></div>
+      <div class="meta"><span><b>${fmt(j.duration)}</b> <span class="arrow">→</span> <b>${fmt(j.total)}</b></span><span>${n} ${plural(n, "баннер", "баннера", "баннеров")} ${esc(j.banner_title)}</span><span>${j.width}×${j.height} · ${Math.round(j.fps)} fps</span></div>
       ${timeline(j)}${progress}${err}
     </div>
     <div class="actions">${actions}</div>
@@ -445,18 +447,33 @@ function uploadCard(u) {
   </div><div></div></article>`;
 }
 
+const RULES = {
+  musordrop: `<li>До <b>1:59</b> - один баннер в середине готового ролика (12 с → с 0:09)</li>
+    <li>От <b>2:00</b> - по баннеру в каждой полной минуте: <b>0:30, 1:30, 2:30…</b></li>
+    <li>Длина считается с учётом баннеров - они удлиняют ролик</li>`,
+  floatup: `<li>До <b>1:00</b> - один баннер в середине готового ролика</li>
+    <li>От <b>1:00</b> - баннеры на <b>0:20, 1:20, 2:20…</b>, каждый следующий через минуту</li>
+    <li>Длина считается с учётом баннеров - они удлиняют ролик</li>`,
+  skinhouse: `<li>До <b>1:30</b> - один баннер в середине готового ролика</li>
+    <li>От <b>1:30</b> - баннеры на 30-й секунде каждой минуты: <b>0:30, 1:30, 2:30…</b></li>
+    <li>Длина считается с учётом баннеров - они удлиняют ролик</li>`,
+};
+
 function render() {
   if (!S) return;
   const { settings: st, banner: b, jobs } = S;
 
-  $("#bannerPrev").innerHTML = b.thumb ? `<img src="/thumbs/${encodeURIComponent(b.thumb)}" alt="Баннер Musor Drop">` : `<span class="sub">Баннера нет</span>`;
-  $("#bannerName").textContent = b.name || "Баннер не найден";
+  $("#bannerPrev").style.aspectRatio = b.width ? `${b.width} / ${b.height}` : "";
+  $("#bannerPrev").innerHTML = b.thumb ? `<img src="/thumbs/${encodeURIComponent(b.thumb)}" alt="Баннер ${esc(b.title)}">` : `<span class="sub">Баннера нет</span>`;
+  $("#bannerName").textContent = b.name || `Баннер ${b.title} не найден`;
   if (b.name) {
     $("#bannerSub").innerHTML = `${b.duration.toFixed(1)} с · ${b.width}×${b.height}`
       + (b.chroma ? ` · <span class="swatch" style="background:#${b.chroma}"></span>фон вырезается` : "");
   } else {
     $("#bannerSub").textContent = b.error || "";
   }
+
+  if ($("#rules").dataset.kind !== st.banner) { $("#rules").innerHTML = RULES[st.banner] || ""; $("#rules").dataset.kind = st.banner; }
 
   document.querySelectorAll(".seg-ctl").forEach((el) => {
     const key = el.dataset.setting;

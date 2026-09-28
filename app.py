@@ -27,8 +27,8 @@ app = Flask(__name__, static_folder=str(ROOT / "static"), static_url_path="/stat
 lock = threading.RLock()
 wake = threading.Event()
 
-settings = {"scale": 100, "audio": True, "similarity": 0.25, "quality": "high"}
-state = {"banner": None, "banner_error": None, "banner_thumb": None}
+settings = {"banner": "musordrop", "scale": 100, "audio": True, "similarity": 0.25, "quality": "high"}
+banners = {k: {"banner": None, "error": None, "thumb": None} for k in md.BANNERS}
 jobs: dict[str, dict] = {}
 
 
@@ -46,25 +46,39 @@ def options() -> md.Options:
     )
 
 
-def ensure_banner() -> md.Banner | None:
-    if state["banner"] and state["banner"].path.exists():
-        return state["banner"]
+def ensure_banner(kind: str | None = None) -> md.Banner | None:
+    kind = kind or settings["banner"]
+    st = banners[kind]
+    if st["banner"] and st["banner"].path.exists():
+        return st["banner"]
     try:
-        banner = md.load_banner()
+        banner = md.load_banner(kind=kind)
     except md.BannerError as e:
-        state.update(banner=None, banner_error=str(e), banner_thumb=None)
+        st.update(banner=None, error=str(e), thumb=None)
         return None
-    thumb = THUMBS / f"banner_{uuid.uuid4().hex[:8]}.png"
+    thumb = THUMBS / f"banner_{kind}_{uuid.uuid4().hex[:8]}.png"
     md.frame_png(banner.path, thumb, min(4.0, banner.media.duration * 0.66), 480, banner.chroma)
-    state.update(banner=banner, banner_error=None, banner_thumb=thumb.name if thumb.exists() else None)
+    st.update(banner=banner, error=None, thumb=thumb.name if thumb.exists() else None)
     return banner
 
 
-def unique_output(stem: str) -> Path:
-    out = OUTPUT / f"{stem}_musordrop.mp4"
+def replan(banner: md.Banner):
+    """Banners differ in length, so queued videos get new timings when the banner changes."""
+    for item in jobs.values():
+        if item["status"] in ("ready", "queued", "error"):
+            j = item["job"]
+            j.banner = banner
+            try:
+                j.total, j.starts, j.cuts = md.plan(j.v.duration, banner.media.duration, banner.kind)
+            except md.BannerError as e:
+                item.update(status="error", error=str(e))
+
+
+def unique_output(stem: str, kind: str) -> Path:
+    out = OUTPUT / f"{stem}_{kind}.mp4"
     i = 2
     while out.exists():
-        out = OUTPUT / f"{stem}_musordrop ({i}).mp4"
+        out = OUTPUT / f"{stem}_{kind} ({i}).mp4"
         i += 1
     return out
 
@@ -82,6 +96,7 @@ def job_view(jid, item):
         "duration": j.v.duration,
         "total": j.total,
         "banner_len": j.banner.media.duration,
+        "banner_title": j.banner.title,
         "starts": j.starts,
         "width": j.v.width,
         "height": j.v.height,
@@ -92,16 +107,18 @@ def job_view(jid, item):
 def snapshot():
     with lock:
         b = ensure_banner()
+        st = banners[settings["banner"]]
         return {
             "settings": settings,
             "banner": {
+                "title": md.BANNERS[settings["banner"]][0],
                 "name": b.path.name if b else None,
                 "duration": b.media.duration if b else None,
                 "width": b.media.width if b else None,
                 "height": b.media.height if b else None,
                 "chroma": b.chroma if b else None,
-                "thumb": state["banner_thumb"],
-                "error": state["banner_error"],
+                "thumb": st["thumb"],
+                "error": st["error"],
             },
             "jobs": [job_view(k, v) for k, v in jobs.items()],
         }
@@ -119,7 +136,7 @@ def worker():
             item.update(status="processing", progress=0.0, error=None)
             opts = options()
             job = item["job"]
-            out = unique_output(Path(item["name"]).stem)
+            out = unique_output(Path(item["name"]).stem, job.banner.kind)
 
         def progress(p, item=item):
             item["progress"] = p
@@ -152,7 +169,7 @@ def api_upload():
     with lock:
         banner = ensure_banner()
     if not banner:
-        return jsonify(error=state["banner_error"]), 400
+        return jsonify(error=banners[settings["banner"]]["error"]), 400
     jid = uuid.uuid4().hex[:10]
     name = safe_name(Path(f.filename).name)
     path = UPLOADS / f"{jid}{Path(name).suffix.lower() or '.mp4'}"
@@ -174,6 +191,11 @@ def api_upload():
 def api_settings():
     data = request.get_json(force=True) or {}
     with lock:
+        if data.get("banner") in md.BANNERS and data["banner"] != settings["banner"]:
+            settings["banner"] = data["banner"]
+            banner = ensure_banner()
+            if banner:
+                replan(banner)
         if "scale" in data:
             settings["scale"] = max(30, min(100, int(data["scale"])))
         if "audio" in data:
